@@ -1,17 +1,17 @@
-FROM node:18-alpine as base
+FROM node:18-alpine AS base
 
 WORKDIR /app
 
 COPY package*.json ./
 
-FROM base as development
+FROM base AS development
 ENV NODE_ENV=development
 RUN npm install
 COPY . .
 EXPOSE 3002
 CMD ["npm", "run", "dev"]
 
-FROM base as production
+FROM base AS production
 ENV NODE_ENV=production
 RUN npm ci --only=production
 COPY . .
