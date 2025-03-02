@@ -5,14 +5,11 @@ WORKDIR /app
 COPY package*.json ./
 
 FROM base AS development
-
+ENV NODE_ENV=development
 RUN npm install
-
+RUN npm install -g nodemon
 COPY . .
-
-
 EXPOSE 3000
-
 CMD ["npm", "run", "dev"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
