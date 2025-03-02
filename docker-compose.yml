@@ -9,6 +9,7 @@ services:
     volumes:
       - ./frontend:/app
     env_file:
+      - ./frontend/.env
       - .env.development
     networks:
       - e-commerce-network
@@ -23,6 +24,7 @@ services:
     volumes:
       - ./services/auth-service:/app
     env_file:
+      - ./services/auth-service/.env
       - .env.development
     depends_on:
       - mongodb
@@ -39,6 +41,7 @@ services:
     volumes:
       - ./services/product-service:/app
     env_file:
+      - ./services/product-service/.env
       - .env.development
     depends_on:
       - mongodb
@@ -55,6 +58,7 @@ services:
     volumes:
       - ./services/order-service:/app
     env_file:
+      - ./services/order-service/.env
       - .env.development
     depends_on:
       - mongodb
