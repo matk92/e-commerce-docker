@@ -87,7 +87,7 @@ npm run build
 pm2 delete "frontend" || true
 
 # Démarrer le frontend avec PM2 en servant le dossier 'dist'
-pm2 serve "$APP_DIR/frontend/dist" 8080 --name "frontend"
-
+#pm2 serve "$APP_DIR/frontend/dist" 8080 --name "frontend"
+pm2 start npm --name frontend -- start
 # Sauvegarder la configuration PM2
 pm2 save

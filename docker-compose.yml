@@ -1,0 +1,79 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: e-commerce-frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app
+    env_file:
+      - .env.development
+    networks:
+      - e-commerce-network
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: e-commerce-auth-service
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./services/auth-service:/app
+    env_file:
+      - .env.development
+    depends_on:
+      - mongodb
+    networks:
+      - e-commerce-network
+
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: e-commerce-product-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./services/product-service:/app
+    env_file:
+      - .env.development
+    depends_on:
+      - mongodb
+    networks:
+      - e-commerce-network
+
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: e-commerce-order-service
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./services/order-service:/app
+    env_file:
+      - .env.development
+    depends_on:
+      - mongodb
+    networks:
+      - e-commerce-network
+
+  mongodb:
+    image: mongo:8.0
+    container_name: e-commerce-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - e-commerce-network
+
+volumes:
+  mongodb-data:
+
+networks:
+  e-commerce-network:
+    driver: bridge
