@@ -3,6 +3,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: development
     container_name: e-commerce-frontend
     ports:
       - "8080:8080"
@@ -18,6 +19,7 @@ services:
     build:
       context: ./services/auth-service
       dockerfile: Dockerfile
+      target: development
     container_name: e-commerce-auth-service
     ports:
       - "3001:3001"
@@ -35,6 +37,7 @@ services:
     build:
       context: ./services/product-service
       dockerfile: Dockerfile
+      target: development
     container_name: e-commerce-product-service
     ports:
       - "3000:3000"
@@ -52,6 +55,7 @@ services:
     build:
       context: ./services/order-service
       dockerfile: Dockerfile
+      target: development
     container_name: e-commerce-order-service
     ports:
       - "3002:3002"
