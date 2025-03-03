@@ -4,7 +4,7 @@ services:
   frontend:
     image: ghcr.io/deathfal/e-commerce-frontend:latest
     deploy:
-      replicas: 2
+      mode: global
       update_config:
         parallelism: 1
         delay: 10s
@@ -18,7 +18,10 @@ services:
           cpus: '0.5'
           memory: 512M
     ports:
-      - "8080:8080"
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
     environment:
       - NODE_ENV=production
     networks:
