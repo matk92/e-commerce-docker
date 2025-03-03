@@ -1,0 +1,61 @@
+
+services:
+  frontend:
+    image: ghcr.io/deathfal/e-commerce-frontend:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - e-commerce-network
+
+  auth-service:
+    image: ghcr.io/deathfal/e-commerce-auth-service:latest
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/auth
+    depends_on:
+      - mongodb
+    networks:
+      - e-commerce-network
+
+  product-service:
+    image: ghcr.io/deathfal/e-commerce-product-service:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/ecommerce
+    depends_on:
+      - mongodb
+    networks:
+      - e-commerce-network
+
+  order-service:
+    image: ghcr.io/deathfal/e-commerce-order-service:latest
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/orders
+    depends_on:
+      - mongodb
+    networks:
+      - e-commerce-network
+
+  mongodb:
+    image: mongo:5
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - e-commerce-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  e-commerce-network:
+    driver: bridge
