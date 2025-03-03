@@ -1,15 +1,15 @@
+version: '3.8'
+
 services:
   frontend:
     image: ghcr.io/deathfal/e-commerce-frontend:latest
     deploy:
       replicas: 2
       update_config:
-        order: start-first
-        failure_action: rollback
-        delay: 10s
-      rollback_config:
         parallelism: 1
         delay: 10s
+        order: start-first
+        failure_action: rollback
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -30,6 +30,8 @@ services:
     deploy:
       replicas: 2
       update_config:
+        parallelism: 1
+        delay: 10s
         order: start-first
         failure_action: rollback
       restart_policy:
@@ -53,6 +55,8 @@ services:
     deploy:
       replicas: 2
       update_config:
+        parallelism: 1
+        delay: 10s
         order: start-first
         failure_action: rollback
       restart_policy:
@@ -76,6 +80,8 @@ services:
     deploy:
       replicas: 2
       update_config:
+        parallelism: 1
+        delay: 10s
         order: start-first
         failure_action: rollback
       restart_policy:
@@ -105,6 +111,8 @@ services:
         limits:
           cpus: '0.7'
           memory: 1G
+      restart_policy:
+        condition: on-failure
     volumes:
       - mongodb_data:/data/db
     networks:
