@@ -50,6 +50,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4 openssl liblzma5
       - name: Cache node modules
         uses: actions/cache@v3
         with:
@@ -61,13 +65,17 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install dependencies
         working-directory: services/product-service
-        run: npm install
+        run: |
+          npm install
+          # Télécharger MongoDB binaries avant les tests
+          node -e "require('mongodb-memory-server-core').MongoBinary.getPath()"
       - name: Run tests
         working-directory: services/product-service
         run: npm test
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://localhost:27017/test
+          DEBUG: mongodb-memory-server*
 
   build:
     runs-on: ubuntu-latest
