@@ -10,6 +10,10 @@ export default defineConfig({
     port: 8080,
     host: '0.0.0.0',
     cors: true,
+    allowedHosts: [
+     'e-tryhard.sector18.quest',
+     'localhost'
+    ],
     proxy: {
       '/api/products': {
         target: process.env.VITE_PRODUCT_SERVICE_URL || 'http://product-service:3000',
