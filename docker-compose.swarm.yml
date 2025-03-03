@@ -1,0 +1,135 @@
+services:
+  frontend:
+    image: ghcr.io/deathfal/e-commerce-frontend:latest
+    deploy:
+      replicas: 2
+      update_config:
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - frontend-net
+      - backend-net
+
+  auth-service:
+    image: ghcr.io/deathfal/e-commerce-auth-service:latest
+    deploy:
+      replicas: 2
+      update_config:
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/auth
+    networks:
+      - backend-net
+    depends_on:
+      - mongodb
+
+  product-service:
+    image: ghcr.io/deathfal/e-commerce-product-service:latest
+    deploy:
+      replicas: 2
+      update_config:
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/ecommerce
+    networks:
+      - backend-net
+    depends_on:
+      - mongodb
+
+  order-service:
+    image: ghcr.io/deathfal/e-commerce-order-service:latest
+    deploy:
+      replicas: 2
+      update_config:
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/orders
+    networks:
+      - backend-net
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:5
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.7'
+          memory: 1G
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - backend-net
+
+  visualizer:
+    image: dockersamples/visualizer:latest
+    ports:
+      - "8090:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - frontend-net
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  frontend-net:
+    driver: overlay
+  backend-net:
+    driver: overlay
+    internal: true
