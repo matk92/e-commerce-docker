@@ -20,8 +20,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            services/product-service/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install dependencies
         working-directory: services/product-service
         run: npm ci
@@ -43,8 +50,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            services/product-service/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install dependencies
         working-directory: services/product-service
         run: npm ci
