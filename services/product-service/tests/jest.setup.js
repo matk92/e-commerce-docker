@@ -1,25 +1,13 @@
 // Fichier: tests/jest.setup.js
 process.env.NODE_ENV = 'test';
 
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
 let mongod;
 
 beforeAll(async () => {
   try {
-    mongod = new MongoMemoryServer({
-      binary: {
-        version: '4.4.18', // Version compatible sans AVX
-        skipMD5: true
-      },
-      instance: {
-        storageEngine: 'ephemeralForTest'
-      },
-      autoStart: true
-    });
-
-    const uri = await mongod.getConnectionString();
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/test';
 
     // Vérifier et déconnecter si déjà connecté
     if (mongoose.connection.readyState !== 0) {
@@ -40,9 +28,6 @@ afterAll(async () => {
   try {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
-    }
-    if (mongod) {
-      await mongod.stop();
     }
   } catch (error) {
     console.error('Error cleaning up test database:', error);
