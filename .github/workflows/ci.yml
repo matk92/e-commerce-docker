@@ -11,6 +11,10 @@ on:
       - 'services/product-service/**'
   workflow_dispatch:
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
