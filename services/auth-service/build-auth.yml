@@ -1,0 +1,101 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_IMAGE: node:18-alpine
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - services/auth-service/node_modules/
+
+lint-auth:
+  stage: lint
+  image: $NODE_IMAGE
+  script:
+    - cd services/auth-service
+    - npm install
+    - npm install -g eslint
+    - npx eslint . --ext .js --format json --output-file gl-code-quality-report.json || true
+  artifacts:
+    reports:
+      codequality: services/auth-service/gl-code-quality-report.json
+    expire_in: 1 week
+  only:
+    changes:
+      - services/auth-service/**/*
+
+test-auth:
+  stage: test
+  image: $NODE_IMAGE
+  services:
+    - name: mongo:4.4
+      alias: mongodb
+  variables:
+    MONGODB_URI: "mongodb://mongodb:27017/test"
+    NODE_ENV: "test"
+    JWT_SECRET: "efrei_super_pass"
+  script:
+    - cd services/auth-service
+    - npm install
+    - NODE_OPTIONS='--experimental-vm-modules' npm test
+  artifacts:
+    paths:
+      - services/auth-service/coverage/
+    reports:
+      junit: services/auth-service/junit.xml
+    expire_in: 1 week
+  only:
+    changes:
+      - services/auth-service/**/*
+
+build-auth-image:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/auth-service:$CI_COMMIT_REF_SLUG
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - cd services/auth-service
+    - docker build --target production -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+  only:
+    - main
+    - develop
+    - tags
+
+deploy-auth-dev:
+  stage: deploy
+  image: alpine:3.14
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - curl -X POST $WEBHOOK_DEV_URL -H "Content-Type: application/json" -d '{"service":"auth-service","version":"'$CI_COMMIT_REF_SLUG'"}'
+  environment:
+    name: development
+  only:
+    - develop
+
+deploy-auth-prod:
+  stage: deploy
+  image: alpine:3.14
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - curl -X POST $WEBHOOK_PROD_URL -H "Content-Type: application/json" -d '{"service":"auth-service","version":"'$CI_COMMIT_REF_SLUG'"}'
+  environment:
+    name: production
+  only:
+    - main
+    - tags
+  when: manual

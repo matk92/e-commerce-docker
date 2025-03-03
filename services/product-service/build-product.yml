@@ -1,0 +1,100 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_IMAGE: node:18-alpine
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - services/product-service/node_modules/
+
+lint-product:
+  stage: lint
+  image: $NODE_IMAGE
+  script:
+    - cd services/product-service
+    - npm install
+    - npm run lint || true
+  artifacts:
+    reports:
+      codequality: services/product-service/gl-code-quality-report.json
+    expire_in: 1 week
+  only:
+    changes:
+      - services/product-service/**/*
+
+test-product:
+  stage: test
+  image: $NODE_IMAGE
+  services:
+    - name: mongo:4.4
+      alias: mongodb
+  variables:
+    MONGODB_URI: "mongodb://mongodb:27017/test"
+    NODE_ENV: "test"
+    JWT_SECRET: "efrei_super_pass"
+  script:
+    - cd services/product-service
+    - npm install --save-dev mongodb-memory-server @babel/core @babel/preset-env cross-env
+    - NODE_OPTIONS='--experimental-vm-modules' npm test
+  artifacts:
+    paths:
+      - services/product-service/coverage/
+    reports:
+      junit: services/product-service/junit.xml
+    expire_in: 1 week
+  only:
+    changes:
+      - services/product-service/**/*
+
+build-product-image:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_REF_SLUG
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - cd services/product-service
+    - docker build --target production -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+  only:
+    - main
+    - develop
+    - tags
+
+deploy-product-dev:
+  stage: deploy
+  image: alpine:3.14
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - curl -X POST $WEBHOOK_DEV_URL -H "Content-Type: application/json" -d '{"service":"product-service","version":"'$CI_COMMIT_REF_SLUG'"}'
+  environment:
+    name: development
+  only:
+    - develop
+
+deploy-product-prod:
+  stage: deploy
+  image: alpine:3.14
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - curl -X POST $WEBHOOK_PROD_URL -H "Content-Type: application/json" -d '{"service":"product-service","version":"'$CI_COMMIT_REF_SLUG'"}'
+  environment:
+    name: production
+  only:
+    - main
+    - tags
+  when: manual
