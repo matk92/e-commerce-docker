@@ -30,6 +30,8 @@ services:
       - .env.development
     depends_on:
       - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/auth
     networks:
       - e-commerce-network
 
@@ -48,6 +50,8 @@ services:
       - .env.development
     depends_on:
       - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/ecommerce
     networks:
       - e-commerce-network
 
@@ -66,6 +70,8 @@ services:
       - .env.development
     depends_on:
       - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/orders
     networks:
       - e-commerce-network
 
