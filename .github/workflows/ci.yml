@@ -26,12 +26,12 @@ jobs:
           path: |
             services/product-service/node_modules
             ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
         working-directory: services/product-service
-        run: npm ci
+        run: npm install
       - name: Run linting
         working-directory: services/product-service
         run: npm run lint || true
@@ -56,12 +56,12 @@ jobs:
           path: |
             services/product-service/node_modules
             ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
         working-directory: services/product-service
-        run: npm ci
+        run: npm install
       - name: Run tests
         working-directory: services/product-service
         run: npm test
