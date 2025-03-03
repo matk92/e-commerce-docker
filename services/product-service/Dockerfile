@@ -7,7 +7,6 @@ COPY package*.json ./
 FROM base AS development
 ENV NODE_ENV=development
 RUN npm install
-RUN npm install -g nodemon
 COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
@@ -18,19 +17,19 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 FROM base AS production
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroupn
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-RUN npm ci --only=production --no-optional
+RUN npm install --omit=dev
 
 COPY . .
 
-RUN chown -R appuser:appgroup /app
+RUN chown -R appuser:appgroup /user/src/app
 
 USER appuser
 
 EXPOSE 3000
 
-CMD ["node", "src/app.js"]
+CMD ["npm", "start"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:3000/api/health || exit 1

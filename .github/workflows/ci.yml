@@ -11,6 +11,10 @@ on:
       - 'services/product-service/**'
   workflow_dispatch:
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -20,11 +24,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            services/product-service/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install dependencies
         working-directory: services/product-service
-        run: npm ci
+        run: npm install
       - name: Run linting
         working-directory: services/product-service
         run: npm run lint || true
@@ -43,11 +54,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            services/product-service/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('services/product-service/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install dependencies
         working-directory: services/product-service
-        run: npm ci
+        run: npm install
       - name: Run tests
         working-directory: services/product-service
         run: npm test
@@ -60,16 +78,16 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v3
-      - name: Docker login
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image
+      # - name: Docker login
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ghcr.io
+      #     username: deathfal
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Docker image
         uses: docker/build-push-action@v4
         with:
           context: services/product-service
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/e-commerce-product-service:latest
+          push: false  # disabled push temporarily # TODO fix push to deathfal registry 
+          tags: e-commerce-product-service:latest  # Local tag only
           target: production
