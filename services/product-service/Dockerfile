@@ -17,7 +17,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 FROM base AS production
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroupn
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 RUN npm ci --only=production --no-optional
 
