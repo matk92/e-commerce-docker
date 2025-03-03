@@ -130,6 +130,8 @@ volumes:
 networks:
   frontend-net:
     driver: overlay
+    attachable: true
   backend-net:
     driver: overlay
     internal: true
+    attachable: true
