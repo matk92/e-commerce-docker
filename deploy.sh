@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Pull latest changes from git
+
 git pull origin main
 
 REGISTRY="ghcr.io"
@@ -9,6 +10,14 @@ STACK_NAME="ecommerce"
 DEPLOY_PATH="/home/adam/e-commerce"
 
 echo "Démarrage du déploiement..."
+
+# Pulling latest images from registry...
+docker pull $REGISTRY/$USERNAME/e-commerce-frontend:latest
+docker pull $REGISTRY/$USERNAME/e-commerce-auth-service:latest
+docker pull $REGISTRY/$USERNAME/e-commerce-product-service:latest
+docker pull $REGISTRY/$USERNAME/e-commerce-order-service:latest
+docker pull mongo:5
+docker pull dockersamples/visualizer:latest
 
 # Check if Docker swarm is initialized
 if ! docker info | grep -q "Swarm: active"; then
